@@ -18,10 +18,19 @@ public class BoardController {
     return boardService.create(boardRequestDTO);
   }
 
-
   // get a bunch of information
   @GetMapping("/{id}")
   public BaseResponseDTO<BoardResponseDTO> getById(@PathVariable String id) {
     return boardService.getById(id);
+  }
+
+  @PutMapping
+  public BaseResponseDTO<BoardResponseDTO> update(@RequestBody BoardRequestDTO boardRequestDTO) {
+    return boardService.update(boardRequestDTO);
+  }
+
+  @DeleteMapping("/{id}")
+  public BaseResponseDTO<String> delete(@PathVariable String id) {
+    return boardService.delete(id);
   }
 }

@@ -8,4 +8,8 @@ public interface BoardService {
   BaseResponseDTO<String> create(BoardRequestDTO boardRequestDTO);
 
   BaseResponseDTO<BoardResponseDTO> getById(String id);
+
+  BaseResponseDTO<BoardResponseDTO> update(BoardRequestDTO boardRequestDTO);
+
+  BaseResponseDTO<String> delete(String id);
 }

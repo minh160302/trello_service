@@ -57,10 +57,37 @@ public class BoardServiceImpl implements BoardService {
     return new BaseResponseDTO<>(boardResponseDTO, HttpStatus.OK);
   }
 
+
+  /**
+   * @param boardRequestDTO only update title and description
+   * @return
+   */
+  @Override
+  public BaseResponseDTO<BoardResponseDTO> update(BoardRequestDTO boardRequestDTO) {
+    Board board = boardRepository.findById(boardRequestDTO.getId()).orElseThrow(() -> new InvalidEntityIdException("Invalid board id!"));
+    board.setTitle(boardRequestDTO.getTitle());
+    board.setDescription(boardRequestDTO.getDescription());
+    board.setUpdatedDate(Instant.now());
+    return new BaseResponseDTO(boardRepository.save(board), HttpStatus.OK);
+  }
+
+  @Override
+  public BaseResponseDTO<String> delete(String id) {
+    Board board = boardRepository.findById(id).orElseThrow(() -> new InvalidEntityIdException("Invalid board id!"));
+    String workspaceId = board.getWorkspaceId();
+    Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new InvalidEntityIdException("Invalid workspace id!"));
+    workspace.getBoards().remove(id);
+
+    workspaceRepository.save(workspace);
+    boardRepository.deleteById(id);
+    return new BaseResponseDTO("Delete successfully", HttpStatus.OK);
+  }
+
   private Board modelMapper(BoardRequestDTO boardRequestDTO) {
     Board board = new Board();
     board.setDescription(boardRequestDTO.getDescription());
     // TODO: set authorization
+    board.setId(boardRequestDTO.getId());
     board.setTitle(boardRequestDTO.getTitle());
     board.setCatalogs(new ArrayList<>());
     board.setUpdatedDate(Instant.now());
@@ -87,13 +114,14 @@ public class BoardServiceImpl implements BoardService {
       catalogResponseDTO.setUpdatedDate(catalog.getUpdatedDate());
 
       List<CardResponseDTO> cards = new ArrayList<>();
-      for (String cardId: catalog.getCards()) {
+      for (String cardId : catalog.getCards()) {
         Card card = cardRepository.findById(cardId).orElseThrow(() -> new InvalidEntityIdException("Invalid card id!"));
         CardResponseDTO cardResponseDTO = new CardResponseDTO();
         cardResponseDTO.setId(card.getId());
+        cardResponseDTO.setCatalogId(card.getCatalogId());
         cardResponseDTO.setTitle(card.getTitle());
         cardResponseDTO.setDescription(card.getDescription());
-        cardResponseDTO.setAttachment(card.getAttachment());
+        cardResponseDTO.setAttachments(card.getAttachments());
         cardResponseDTO.setMembers(card.getMembers());
 
         cards.add(cardResponseDTO);

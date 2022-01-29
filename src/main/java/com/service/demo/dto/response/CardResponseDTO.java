@@ -13,5 +13,5 @@ public class CardResponseDTO {
   private String catalogId;
   private String description;
   private List<String> members;
-  private String attachment;
+  private List<String> attachments;
 }

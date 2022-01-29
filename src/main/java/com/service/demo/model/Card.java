@@ -22,5 +22,5 @@ public class Card {
 
   private List<String> members;
 
-  private String attachment;
+  private List<String> attachments;
 }

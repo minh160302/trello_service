@@ -1,6 +1,7 @@
 package com.service.demo.service.impl;
 
 import com.service.demo.dto.request.CardRequestDTO;
+import com.service.demo.dto.response.CardResponseDTO;
 import com.service.demo.dto.response.common.BaseResponseDTO;
 import com.service.demo.exception.InvalidEntityIdException;
 import com.service.demo.model.Card;
@@ -35,13 +36,40 @@ public class CardServiceImpl implements CardService {
     return new BaseResponseDTO<>("Create card successfully", HttpStatus.CREATED);
   }
 
+  /**
+   *
+   * @param cardRequestDTO only update metadata
+   * @return
+   */
+  @Override
+  public BaseResponseDTO<CardResponseDTO> update(CardRequestDTO cardRequestDTO) {
+    Card card = cardRepository.findById(cardRequestDTO.getId()).orElseThrow(() -> new InvalidEntityIdException("Invalid card id!"));
+    card.setTitle(cardRequestDTO.getTitle());
+    card.setAttachments(cardRequestDTO.getAttachments());
+    card.setDescription(cardRequestDTO.getDescription());
+
+    return new BaseResponseDTO(cardRepository.save(card), HttpStatus.OK);
+  }
+
+  @Override
+  public BaseResponseDTO<String> delete(String id) {
+    Card card = cardRepository.findById(id).orElseThrow(()-> new InvalidEntityIdException("Invalid card id!"));
+    String catalogId = card.getCatalogId();
+    Catalog catalog = catalogRepository.findById(catalogId).orElseThrow(()-> new InvalidEntityIdException("Invalid catalog id!"));
+    catalog.getCards().remove(id);
+
+    catalogRepository.save(catalog);
+    cardRepository.deleteById(id);
+    return new BaseResponseDTO<>("Delete card successfully", HttpStatus.OK);
+  }
+
   private Card modelMapper(CardRequestDTO cardRequestDTO) {
     Card card = new Card();
     card.setTitle(cardRequestDTO.getTitle());
     card.setDescription(cardRequestDTO.getDescription());
     card.setCatalogId(cardRequestDTO.getCatalogId());
     card.setMembers(new ArrayList<>());
-    card.setAttachment("");
+    card.setAttachments(new ArrayList<>());
     return card;
   }
 }

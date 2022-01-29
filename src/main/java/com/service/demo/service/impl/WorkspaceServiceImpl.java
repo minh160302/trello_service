@@ -60,6 +60,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     for (String id : workspace.getBoards()) {
       Board board = boardRepository.findById(id).orElseThrow(() -> new InvalidEntityIdException("Invalid board id!"));
       BoardResponseDTO boardResponseDTO = new BoardResponseDTO();
+      boardResponseDTO.setId(board.getId());
       boardResponseDTO.setTitle(board.getTitle());
       boardResponseDTO.setDescription(board.getDescription());
       boardResponseDTO.setCreatedDate(board.getCreatedDate());
