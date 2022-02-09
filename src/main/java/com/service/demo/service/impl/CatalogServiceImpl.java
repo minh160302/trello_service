@@ -7,8 +7,10 @@ import com.service.demo.dto.response.common.BaseResponseDTO;
 import com.service.demo.exception.InvalidEntityIdException;
 import com.service.demo.exception.InvalidIndexException;
 import com.service.demo.model.Board;
+import com.service.demo.model.Card;
 import com.service.demo.model.Catalog;
 import com.service.demo.repository.BoardRepository;
+import com.service.demo.repository.CardRepository;
 import com.service.demo.repository.CatalogRepository;
 import com.service.demo.service.CatalogService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,9 @@ public class CatalogServiceImpl implements CatalogService {
 
   @Autowired
   private BoardRepository boardRepository;
+
+  @Autowired
+  private CardRepository cardRepository;
 
   @Override
   public BaseResponseDTO<String> create(CatalogRequestDTO catalogRequestDTO) {
@@ -107,10 +112,17 @@ public class CatalogServiceImpl implements CatalogService {
         List<String> cards = destination.getCards();
         if (position > cards.size()) {
           throw new InvalidIndexException("Position index out of bounds!");
-        } else if (position == cards.size()) {
-          cards.add(cardId);
-        } else {
-          cards.add(position, cardId);
+        }
+        else {
+          if (position == cards.size()) {
+            cards.add(cardId);
+          } else {
+            cards.add(position, cardId);
+          }
+          // update catalog id in card after moving.
+          Card card = cardRepository.findById(cardId).get();
+          card.setCatalogId(destination.getId());
+          cardRepository.save(card);
         }
       }
       // update in database
