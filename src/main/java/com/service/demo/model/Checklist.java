@@ -9,20 +9,12 @@ import java.util.List;
 
 @Getter
 @Setter
-@Document("card")
-public class Card {
+@Document("checklist")
+public class Checklist {
   @Id
   private String id;
-
   private String title;
-
-  private String catalogId;
-
-  private String description;
-
-  private List<String> members;
-
-  private List<String> attachments;
-
-  private List<String> checklists;
+  private String cardId;
+  private List<Task> tasks;
+  private Double progress;
 }

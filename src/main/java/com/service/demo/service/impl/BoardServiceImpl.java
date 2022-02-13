@@ -10,10 +10,7 @@ import com.service.demo.model.Board;
 import com.service.demo.model.Card;
 import com.service.demo.model.Catalog;
 import com.service.demo.model.Workspace;
-import com.service.demo.repository.BoardRepository;
-import com.service.demo.repository.CardRepository;
-import com.service.demo.repository.CatalogRepository;
-import com.service.demo.repository.WorkspaceRepository;
+import com.service.demo.repository.*;
 import com.service.demo.service.BoardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,6 +33,9 @@ public class BoardServiceImpl implements BoardService {
 
   @Autowired
   private CardRepository cardRepository;
+
+  @Autowired
+  private ChecklistRepository checklistRepository;
 
   @Override
   public BaseResponseDTO<String> create(BoardRequestDTO boardRequestDTO) {
@@ -74,6 +74,19 @@ public class BoardServiceImpl implements BoardService {
   @Override
   public BaseResponseDTO<String> delete(String id) {
     Board board = boardRepository.findById(id).orElseThrow(() -> new InvalidEntityIdException("Invalid board id!"));
+
+    for (String catalogId : board.getCatalogs()) {
+      Catalog catalog = catalogRepository.findById(catalogId).orElseThrow(() -> new InvalidEntityIdException("Invalid catalog id!"));
+      for (String cardId : catalog.getCards()) {
+        Card card = cardRepository.findById(cardId).get();
+        for (String checklistId : card.getChecklists()) {
+          checklistRepository.deleteById(checklistId);
+        }
+        cardRepository.deleteById(cardId);
+      }
+      catalogRepository.deleteById(catalogId);
+    }
+
     String workspaceId = board.getWorkspaceId();
     Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new InvalidEntityIdException("Invalid workspace id!"));
     workspace.getBoards().remove(id);
@@ -123,6 +136,7 @@ public class BoardServiceImpl implements BoardService {
         cardResponseDTO.setDescription(card.getDescription());
         cardResponseDTO.setAttachments(card.getAttachments());
         cardResponseDTO.setMembers(card.getMembers());
+//        cardResponseDTO.setChecklists(card.getChecklists());
 
         cards.add(cardResponseDTO);
       }

@@ -12,6 +12,7 @@ import com.service.demo.model.Catalog;
 import com.service.demo.repository.BoardRepository;
 import com.service.demo.repository.CardRepository;
 import com.service.demo.repository.CatalogRepository;
+import com.service.demo.repository.ChecklistRepository;
 import com.service.demo.service.CatalogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,9 @@ public class CatalogServiceImpl implements CatalogService {
 
   @Autowired
   private CardRepository cardRepository;
+
+  @Autowired
+  private ChecklistRepository checklistRepository;
 
   @Override
   public BaseResponseDTO<String> create(CatalogRequestDTO catalogRequestDTO) {
@@ -63,6 +67,13 @@ public class CatalogServiceImpl implements CatalogService {
   @Override
   public BaseResponseDTO<String> delete(String id) {
     Catalog catalog = catalogRepository.findById(id).orElseThrow(() -> new InvalidEntityIdException("Invalid catalog id!"));
+    for (String cardId : catalog.getCards()) {
+      Card card = cardRepository.findById(cardId).get();
+      for (String checklistId : card.getChecklists()) {
+        checklistRepository.deleteById(checklistId);
+      }
+      cardRepository.deleteById(cardId);
+    }
     String boardId = catalog.getBoardId();
     Board board = boardRepository.findById(boardId).orElseThrow(() -> new InvalidEntityIdException("Invalid board id!"));
     board.getCatalogs().remove(id);
@@ -112,8 +123,7 @@ public class CatalogServiceImpl implements CatalogService {
         List<String> cards = destination.getCards();
         if (position > cards.size()) {
           throw new InvalidIndexException("Position index out of bounds!");
-        }
-        else {
+        } else {
           if (position == cards.size()) {
             cards.add(cardId);
           } else {

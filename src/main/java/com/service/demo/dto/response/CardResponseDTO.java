@@ -1,5 +1,6 @@
 package com.service.demo.dto.response;
 
+import com.service.demo.model.Checklist;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,4 +15,5 @@ public class CardResponseDTO {
   private String description;
   private List<String> members;
   private List<String> attachments;
+  private List<Checklist> checklists;
 }

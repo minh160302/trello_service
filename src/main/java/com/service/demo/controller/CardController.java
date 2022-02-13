@@ -13,6 +13,11 @@ public class CardController {
   @Autowired
   private CardService cardService;
 
+  @GetMapping("/{id}")
+  public BaseResponseDTO<CardResponseDTO> getById(@PathVariable String id) {
+    return cardService.get(id);
+  }
+
   @PostMapping
   public BaseResponseDTO<String> create(@RequestBody CardRequestDTO cardRequestDTO) {
     return cardService.create(cardRequestDTO);
